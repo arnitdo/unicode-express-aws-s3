@@ -1,6 +1,7 @@
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl} = require("@aws-sdk/s3-request-presigner")
-const {config} = require("dotenv")
+const { config } = require("dotenv")
+const express = require("express")
 
 config()
 
@@ -29,4 +30,20 @@ async function getObjectUrl(objectKey, requestMethod) {
 	return objectUrl
 }
 
-getObjectUrl("Finance.svg", "put").then(console.log)
+const app = express()
+
+app.use(express.json())
+
+app.post(
+	"/",
+	async (req, res) => {
+		const { objectKey, requestMethod } = req.body
+		const objectUrl = await getObjectUrl(objectKey, requestMethod)
+		return res.status(200).json({objectUrl})
+	}
+)
+
+app.listen(
+	5500,
+	() => {console.log("Backend up!")}
+)
